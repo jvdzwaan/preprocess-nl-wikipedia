@@ -1,0 +1,4 @@
+.exvim.project/*
+project.exvim
+*.pyc
+
