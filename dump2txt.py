@@ -53,19 +53,23 @@ def get_articles(queue, wp_dump, num_workers):
         queue.put(u'END')
 
 def clean_wiki_text(q_in, q_out):
+    dispatcher, sep = dispatch_text, u""
+    si = get_siteinfo('nl')
     while True:
         text = q_in.get()
         if text == 'END':
             q_out.put(text)
             break
         else:
-            dispatcher, sep = dispatch_text, u""
-            si = get_siteinfo('nl')
-            res = parse(text, siteinfo=si)
-            output = sep.join("_".join(e for e in i) for i in dispatcher(res))
-            output = output.replace('\n', ' ')
-            #print 'parsed text'
-            q_out.put(output)
+            try:
+                res = parse(text, siteinfo=si)
+                output = sep.join("_".join(e for e in i) for i in dispatcher(res))
+                output = output.replace('\n', ' ')
+                #print 'parsed text'
+                q_out.put(output)
+            except:
+                print 'Failed to clean ', text.split()[0]
+                continue
 
 
 def write2file(queue, wp_dump):
