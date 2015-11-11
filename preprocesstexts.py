@@ -9,7 +9,8 @@ import tarfile
 import string
 import time
 from pattern.nl import parsetree
-
+import shutil
+from multiprocessing import Pool
 
 def articles(txt_file):
     with codecs.open(txt_file, 'rb', 'utf-8') as f:
@@ -32,23 +33,15 @@ def lemmatize(text):
     words = []
     for sentence in r:
         for lemma in sentence.lemmata:
-            if not lemma in string.punctuation and not lemma == 'http:':
+            if not lemma == 'http:':
                 words.append(lemma)
                 #print lemma
     return words
 
 
-input_dir = '/home/jvdzwaan/data/wikipedia-text-sample/'
-output_dir = '/home/jvdzwaan/data/wikipedia-articles/'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-text_files = glob.glob('{}*.txt'.format(input_dir))
-for i, txt_file in enumerate(text_files):
-    print '{} ({} of {})'.format(txt_file, i+1, len(text_files)),
-
-    out_file = os.path.join(output_dir, os.path.basename(txt_file))
+def process_file(txt_file, output_dir):
     start = time.time()
+    out_file = os.path.join(output_dir, os.path.basename(txt_file))
     with codecs.open(out_file, 'wb', 'utf-8') as f:
         for article in articles(txt_file):
             article = article.replace('[', '')
@@ -61,9 +54,21 @@ for i, txt_file in enumerate(text_files):
             article = article.replace('\n', ' ')
 
             words = lemmatize(article)
+
             f.write(' '.join(words)+'\n')
     end = time.time()
-    print ' -> {} sec'.format(end-start)
+    print 'Done with {} ({} sec)'.format(txt_file, (end-start))
 
-    #print repr(txt)
+input_dir = '/home/jvdzwaan/data/wikipedia-text/'
+output_dir = '/home/jvdzwaan/data/wikipedia-articles/'
 
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+text_files = glob.glob('{}*.txt'.format(input_dir))
+pool = Pool()
+results = [pool.apply_async(process_file, args=(txt_file, output_dir))
+           for txt_file in text_files]
+
+pool.close()
+pool.join()
