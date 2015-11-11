@@ -1,5 +1,8 @@
 """Script to extract articles from wikipedia dump and store cleaned text
 
+An article is stored on a single line. Output files are approximately 10Mb
+each.
+
 Usage: python dump2txt.py <dump file> <output dir>
 """
 from lxml import etree
@@ -11,6 +14,7 @@ import itertools
 import codecs
 import shutil
 import multiprocessing as mp
+import time
 
 def get_articles_test(q, dump, num_workers):
     print 'Ja'
@@ -36,7 +40,13 @@ def get_articles(queue, wp_dump, num_workers):
          
             title = elem.find(title_tag).text
             #print 'Adding', title
+            #print 'Queue size:', queue.qsize()
             text = elem.find('{}/{}'.format(revision_tag, text_tag)).text
+            while True:
+                if queue.qsize() > 2500:
+                    time.sleep(1)
+                else:
+                    break
             queue.put(u'{} {}\n'.format(title,
                                         text))
     for i in range(num_workers):
