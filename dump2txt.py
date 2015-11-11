@@ -1,3 +1,7 @@
+"""Script to extract articles from wikipedia dump and store cleaned text
+
+Usage: python dump2txt.py <dump file> <output dir>
+"""
 from lxml import etree
 from bz2 import BZ2File
 import sys
