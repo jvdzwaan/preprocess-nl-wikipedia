@@ -3,21 +3,12 @@
 """
 import glob
 import codecs
-import uuid
 import os
-import tarfile
-import string
 import time
 from pattern.nl import parsetree
-import shutil
 from multiprocessing import Pool
-
-def articles(txt_file):
-    with codecs.open(txt_file, 'rb', 'utf-8') as f:
-        text = f.read()
-        articles = text.split('\n\n[[')
-        for article in articles:
-            yield article
+from bs4 import BeautifulSoup
+import sys
 
 
 def lemmatize(text):
@@ -39,36 +30,31 @@ def lemmatize(text):
     return words
 
 
-def process_file(txt_file, output_dir):
+def process_file(xml_file, output_dir):
     start = time.time()
-    out_file = os.path.join(output_dir, os.path.basename(txt_file))
+    out_file = os.path.join(output_dir,
+                            os.path.basename(xml_file).replace('xml', 'txt'))
+    with codecs.open(xml_file, 'rb', 'utf-8') as f:
+        soup = BeautifulSoup(f.read(), 'lxml')
+
+    docs = soup.find_all('doc')
     with codecs.open(out_file, 'wb', 'utf-8') as f:
-        for article in articles(txt_file):
-            article = article.replace('[', '')
-            article = article.replace(']', '')
-            article = article.replace('=', ' ')
-            article = article.replace('*', ' ')
-            article = article.replace('\'\'', ' ')
-            article = article.replace('"', ' ')
-            article = article.replace('|', ' ')
-            article = article.replace('\n', ' ')
-
-            words = lemmatize(article)
-
-            f.write(' '.join(words)+'\n')
+        for doc in docs:
+            lemmas = lemmatize(doc.text.replace('\n', ' '))
+            f.write(' '.join(lemmas)+'\n')
     end = time.time()
-    print 'Done with {} ({} sec)'.format(txt_file, (end-start))
+    print 'Done with {} ({} sec)'.format(xml_file, (end-start))
 
-input_dir = '/home/jvdzwaan/data/wikipedia-text/'
-output_dir = '/home/jvdzwaan/data/wikipedia-articles/'
+input_dir = sys.argv[1]
+output_dir = sys.argv[2]
 
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-text_files = glob.glob('{}*.txt'.format(input_dir))
+input_files = glob.glob('{}/**/*.xml'.format(input_dir))
 pool = Pool()
-results = [pool.apply_async(process_file, args=(txt_file, output_dir))
-           for txt_file in text_files]
+results = [pool.apply_async(process_file, args=(f, output_dir))
+           for f in input_files]
 
 pool.close()
 pool.join()
