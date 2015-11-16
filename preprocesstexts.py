@@ -9,6 +9,7 @@ from pattern.nl import parsetree
 from multiprocessing import Pool
 from bs4 import BeautifulSoup
 import sys
+import numpy as np
 
 
 def lemmatize(text):
@@ -31,7 +32,8 @@ def lemmatize(text):
 
 
 def process_file(xml_file, output_dir):
-    start = time.time()
+    n_texts = 0
+    #start = time.time()
     p, n = os.path.split(xml_file)
     d = p.rsplit('/')[-1]
     #print d
@@ -48,8 +50,10 @@ def process_file(xml_file, output_dir):
         for doc in docs:
             lemmas = lemmatize(doc.text.replace('\n', ' '))
             f.write(' '.join(lemmas)+'\n')
-    end = time.time()
-    print 'Done with {} ({} sec)'.format(xml_file, (end-start))
+            n_texts = n_texts + 1
+    #end = time.time()
+    #print 'Done with {} ({} sec)'.format(xml_file, (end-start))
+    return n_texts
 
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
@@ -64,3 +68,5 @@ results = [pool.apply_async(process_file, args=(f, output_dir))
 
 pool.close()
 pool.join()
+output = [p.get() for p in results]
+print '# of articles:', np.sum(output)
