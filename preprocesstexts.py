@@ -62,11 +62,13 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 input_files = glob.glob('{}/**/wiki*'.format(input_dir))
+print len(input_files), 'input files'
 pool = Pool()
 results = [pool.apply_async(process_file, args=(f, output_dir))
            for f in input_files]
 
 pool.close()
 pool.join()
-output = [p.get() for p in results]
+output = [p.get() for p in results if not p.get() is None]
+print len(output), 'outputs'
 print '# of articles:', np.sum(output)
