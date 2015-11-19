@@ -69,6 +69,6 @@ results = [pool.apply_async(process_file, args=(f, output_dir))
 
 pool.close()
 pool.join()
-output = [p.get() for p in results if not p.get() is None]
+output = [p.get() for p in results if not p is None]
 print len(output), 'outputs'
 print '# of articles:', np.sum(output)
