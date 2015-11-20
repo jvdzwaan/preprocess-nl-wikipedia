@@ -44,8 +44,8 @@ def process_file(xml_file, output_dir):
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-            out_file = os.path.join(output_dir,
-                                    os.path.basename(xml_file))
+        out_file = os.path.join(output_dir,
+                                os.path.basename(xml_file))
 
         with codecs.open(xml_file, 'rb', 'utf-8') as f:
             soup = BeautifulSoup(f.read(), 'lxml')
