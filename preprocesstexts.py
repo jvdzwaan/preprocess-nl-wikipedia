@@ -77,7 +77,7 @@ results = [pool.apply_async(process_file, args=(f, output_dir))
 
 pool.close()
 pool.join()
-output = [p.get() for p in results if not p is None]
+output = [p.get() for p in results if p is not None and p.get() is not None]
 
 logger.info('{} of files successfully processed'.format(len(output))
 logger.info('{} articles found'.format(np.sum(output))
