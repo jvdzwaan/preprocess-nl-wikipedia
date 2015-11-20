@@ -29,7 +29,8 @@ def lemmatize(text):
     words = []
     for sentence in r:
         for lemma in sentence.lemmata:
-            words.append(lemma)
+            if lemma is not None:
+                words.append(lemma)
     return words
 
 
