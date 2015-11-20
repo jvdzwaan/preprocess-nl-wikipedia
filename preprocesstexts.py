@@ -45,7 +45,7 @@ def process_file(xml_file, output_dir):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             out_file = os.path.join(output_dir,
-                                os.path.basename(xml_file))
+                                    os.path.basename(xml_file))
 
         with codecs.open(xml_file, 'rb', 'utf-8') as f:
             soup = BeautifulSoup(f.read(), 'lxml')
@@ -58,7 +58,7 @@ def process_file(xml_file, output_dir):
                 n_texts = n_texts + 1
         #end = time.time()
     except Exception, e:
-       logger.error('Failed to open file', exc_info=True)
+        logger.error('Failed to open file', exc_info=True)
     #print 'Done with {} ({} sec)'.format(xml_file, (end-start))
     return n_texts
 
@@ -69,7 +69,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 input_files = glob.glob('{}/**/wiki*'.format(input_dir))
-logger.info('lemmatizing text in {} files'.format(len(input_files))
+logger.info('lemmatizing text in {} files'.format(len(input_files)))
 
 pool = Pool()
 results = [pool.apply_async(process_file, args=(f, output_dir))
@@ -79,5 +79,5 @@ pool.close()
 pool.join()
 output = [p.get() for p in results if p is not None and p.get() is not None]
 
-logger.info('{} of files successfully processed'.format(len(output))
-logger.info('{} articles found'.format(np.sum(output))
+logger.info('{} of files successfully processed'.format(len(output)))
+logger.info('{} articles found'.format(np.sum(output)))
