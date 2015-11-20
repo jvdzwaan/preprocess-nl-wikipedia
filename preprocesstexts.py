@@ -10,6 +10,10 @@ from multiprocessing import Pool
 from bs4 import BeautifulSoup
 import sys
 import numpy as np
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def lemmatize(text):
@@ -25,33 +29,36 @@ def lemmatize(text):
     words = []
     for sentence in r:
         for lemma in sentence.lemmata:
-            if not lemma == 'http:':
-                words.append(lemma)
-                #print lemma
+            words.append(lemma)
     return words
 
 
 def process_file(xml_file, output_dir):
     n_texts = 0
-    #start = time.time()
-    p, n = os.path.split(xml_file)
-    d = p.rsplit('/')[-1]
-    #print d
-    output_dir = os.path.join(output_dir, d)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    out_file = os.path.join(output_dir,
-                            os.path.basename(xml_file).replace('xml', 'txt'))
-    with codecs.open(xml_file, 'rb', 'utf-8') as f:
-        soup = BeautifulSoup(f.read(), 'lxml')
 
-    docs = soup.find_all('doc')
-    with codecs.open(out_file, 'wb', 'utf-8') as f:
-        for doc in docs:
-            lemmas = lemmatize(doc.text.replace('\n', ' '))
-            f.write(' '.join(lemmas)+'\n')
-            n_texts = n_texts + 1
-    #end = time.time()
+    try:
+        #start = time.time()
+        p, n = os.path.split(xml_file)
+        d = p.rsplit('/')[-1]
+        output_dir = os.path.join(output_dir, d)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            out_file = os.path.join(output_dir,
+                                os.path.basename(xml_file))
+
+        with codecs.open(xml_file, 'rb', 'utf-8') as f:
+            soup = BeautifulSoup(f.read(), 'lxml')
+
+        docs = soup.find_all('doc')
+        with codecs.open(out_file, 'wb', 'utf-8') as f:
+            for doc in docs:
+                lemmas = lemmatize(doc.text.replace('\n', ' '))
+                f.write(' '.join(lemmas)+'\n')
+                n_texts = n_texts + 1
+        #end = time.time()
+    except Exception, e:
+       logger.error('Failed to open file', exc_info=True)
     #print 'Done with {} ({} sec)'.format(xml_file, (end-start))
     return n_texts
 
@@ -62,7 +69,8 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 input_files = glob.glob('{}/**/wiki*'.format(input_dir))
-print len(input_files), 'input files'
+logger.info('lemmatizing text in {} files'.format(len(input_files))
+
 pool = Pool()
 results = [pool.apply_async(process_file, args=(f, output_dir))
            for f in input_files]
@@ -70,5 +78,6 @@ results = [pool.apply_async(process_file, args=(f, output_dir))
 pool.close()
 pool.join()
 output = [p.get() for p in results if not p is None]
-print len(output), 'outputs'
-print '# of articles:', np.sum(output)
+
+logger.info('{} of files successfully processed'.format(len(output))
+logger.info('{} articles found'.format(np.sum(output))
