@@ -58,7 +58,10 @@ def process_file(xml_file, output_dir):
                 n_texts = n_texts + 1
         #end = time.time()
     except Exception, e:
-        logger.error('Failed to open file', exc_info=True)
+        logger.error('Exception!', exc_info=True)
+        logger.error('lemmas: {}'.format(str(lemmas)))
+        logger.error('text: {}'.format(text))
+
     #print 'Done with {} ({} sec)'.format(xml_file, (end-start))
     return n_texts
 
