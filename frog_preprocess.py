@@ -7,7 +7,7 @@ import logging
 import time
 
 #from cptm.utils.frog import get_frogclient, pos_and_lemmas
-from cptm.utils.inputgeneration import remove_trailing_digits
+#from cptm.utils.inputgeneration import remove_trailing_digits
 
 
 def process_file(xml_file, output_dir, frogclient=None):
